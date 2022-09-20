@@ -8,6 +8,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.permissions import IsAuthenticated
 
+from elasticsearch_chat_app import *
 from profiles_api import serializers, models, permissions
 
 
@@ -26,11 +27,22 @@ class UserLoginApiView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 
-class UserProfileFeedViewSet(viewsets.ModelViewSet):
+class MessageSendApiView(APIView):
+    """Send Message API"""
+    serializer_class = serializers.MessageSerializer
     authentication_classes = (TokenAuthentication,)
-    serializer_class = serializers.ProfileFeedItemSerializer
-    queryset = models.ProfileFeedItem.objects.all()
-    permission_classes = (permissions.UpdateOwnStatus, IsAuthenticated)
+    permission_classes = (IsAuthenticated,)
 
-    def perform_create(self, serializer):
-        serializer.save(user_profile=self.request.user)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            username_src = request.user.username
+            username_dest = serializer.validated_data.get('username')
+            message = serializer.validated_data.get('message')
+            send_message(es=es, username_src=username_src, username_dest=username_dest, message=message)
+            return Response({'username_src': username_src, 'username_dest': username_dest, 'message': message})
+        else:
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )

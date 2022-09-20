@@ -32,8 +32,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     objects = UserProfileManager()
     USERNAME_FIELD = 'username'
 
-    # REQUIRED_FIELDS = ['username']
-
     def get_username(self):
         """"Retrieve username"""
         return self.username
@@ -41,14 +39,3 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """Return string representation of our user"""
         return self.username
-
-
-class ProfileFeedItem(models.Model):
-    """Profile Status update"""
-    user_profile = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    status_text = models.CharField(max_length=255)
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        """Return the model as a string"""
-        return self.status_text

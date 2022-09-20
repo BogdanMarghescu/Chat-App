@@ -2,6 +2,12 @@ from rest_framework import serializers
 from profiles_api import models
 
 
+class MessageSerializer(serializers.Serializer):
+    """Serializes a message"""
+    username = serializers.CharField(max_length=255)
+    message = serializers.CharField(max_length=1024)
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializes a user profile object"""
 
