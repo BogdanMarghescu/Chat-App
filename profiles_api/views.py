@@ -39,8 +39,13 @@ class MessageSendApiView(APIView):
             username_src = request.user.username
             username_dest = serializer.validated_data.get('username')
             message = serializer.validated_data.get('message')
-            send_message(es=es, username_src=username_src, username_dest=username_dest, message=message)
-            return Response({'username_src': username_src, 'username_dest': username_dest, 'message': message})
+            if models.UserProfile.objects.filter(username=username_dest).exists() and username_src != username_dest:
+                send_message(es=es, username_src=username_src, username_dest=username_dest, message=message)
+                return Response({'username_src': username_src, 'username_dest': username_dest, 'message': message})
+            elif username_src == username_dest:
+                return Response({'UserError': 'You cannot send message to yourself!'})
+            else:
+                return Response({'UserError': f'User {username_dest} does not exist!'})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
