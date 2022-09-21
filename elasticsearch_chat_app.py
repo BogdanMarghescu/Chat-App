@@ -23,10 +23,10 @@ def get_messages(es, username, index="messages"):
     message_list = []
     resp = es.search(index=index, query={"match": {"destination": username}})
     if resp['hits']['total']['value'] > 0:
-        print(f"Messages from user {username}:")
+        print(f"Messages to user {username}:")
         for hit in resp['hits']['hits']:
             message_list.append({"source": hit['_source']['source'], "destination": hit['_source']['destination'], "message": hit['_source']['message'], "timestamp": hit['_source']['timestamp']})
             print(f"{hit['_source']['timestamp']} {hit['_source']['source']} --> {hit['_source']['destination']}: {hit['_source']['message']}")
     else:
-        print(f"User {username} has no messages sent.")
+        print(f"User {username} has received no messages.")
     return message_list
