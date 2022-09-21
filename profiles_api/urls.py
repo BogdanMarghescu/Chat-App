@@ -9,5 +9,6 @@ router.register('register', views.UserProfileViewSet)
 urlpatterns = [
     path('login/', views.UserLoginApiView.as_view()),
     path('send-message/', views.MessageSendApiView.as_view()),
+    path('get-messages/', views.MessageViewApiView.as_view()),
     path('', include(router.urls)),
 ]

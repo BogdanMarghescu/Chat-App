@@ -42,7 +42,15 @@ class MessageSendApiView(APIView):
             send_message(es=es, username_src=username_src, username_dest=username_dest, message=message)
             return Response({'username_src': username_src, 'username_dest': username_dest, 'message': message})
         else:
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MessageViewApiView(APIView):
+    """Get all messages for logged in user"""
+    serializer_class = serializers.MessageSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, format=None):
+        username = request.user.username
+        return Response(get_messages(es=es, username=username))

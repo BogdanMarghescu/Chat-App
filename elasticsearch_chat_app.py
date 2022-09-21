@@ -1,5 +1,6 @@
 from datetime import datetime
 from elasticsearch import Elasticsearch
+
 es = Elasticsearch('http://127.0.0.1:9200')
 
 
@@ -19,10 +20,13 @@ def send_message(es, username_src, username_dest, message, index="messages"):
 
 
 def get_messages(es, username, index="messages"):
-    resp = es.search(index=index, query={"match": {"source": username}})
+    message_list = []
+    resp = es.search(index=index, query={"match": {"destination": username}})
     if resp['hits']['total']['value'] > 0:
         print(f"Messages from user {username}:")
         for hit in resp['hits']['hits']:
+            message_list.append({"source": hit['_source']['source'], "destination": hit['_source']['destination'], "message": hit['_source']['message'], "timestamp": hit['_source']['timestamp']})
             print(f"{hit['_source']['timestamp']} {hit['_source']['source']} --> {hit['_source']['destination']}: {hit['_source']['message']}")
     else:
         print(f"User {username} has no messages sent.")
+    return message_list
