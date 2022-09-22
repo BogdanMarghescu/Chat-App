@@ -1,9 +1,7 @@
-from rest_framework.views import APIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import status, viewsets, filters
 from rest_framework.authentication import TokenAuthentication
-from rest_framework import filters
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.permissions import IsAuthenticated
@@ -27,11 +25,16 @@ class UserLoginApiView(ObtainAuthToken):
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
 
 
-class MessageSendApiView(APIView):
-    """Send Message API"""
+class MessageApiView(GenericAPIView):
+    """Message API"""
     serializer_class = serializers.MessageSerializer
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
+    queryset = ""
+
+    def get(self, request, format=None):
+        username = request.user.username
+        return Response(get_messages(es=es, username=username))
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -43,19 +46,8 @@ class MessageSendApiView(APIView):
                 send_message(es=es, username_src=username_src, username_dest=username_dest, message=message)
                 return Response({'username_src': username_src, 'username_dest': username_dest, 'message': message})
             elif username_src == username_dest:
-                return Response({'UserError': 'You cannot send message to yourself!'})
+                return Response('You cannot send message to yourself!', status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
-                return Response({'UserError': f'User {username_dest} does not exist!'})
+                return Response(f'User {username_dest} does not exist!', status=status.HTTP_404_NOT_FOUND)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MessageViewApiView(APIView):
-    """Get all messages for logged in user"""
-    serializer_class = serializers.MessageSerializer
-    authentication_classes = (TokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request, format=None):
-        username = request.user.username
-        return Response(get_messages(es=es, username=username))

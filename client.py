@@ -32,12 +32,9 @@ def login(username, password):
 def send_message(auth_token, username_dest, message):
     header_message = {'Content-type': 'application/json', 'Authorization': f'Token {auth_token}'}
     message_request = {'username': username_dest, 'message': message}
-    response = requests.post('http://localhost:8000/send-message/', data=json.dumps(message_request), headers=header_message)
+    response = requests.post('http://localhost:8000/messages/', data=json.dumps(message_request), headers=header_message)
     try:
         response.raise_for_status()
-        response_json = json.loads(response.text)
-        if 'UserError' in response_json:
-            raise UserError(response_json['UserError'])
         return f"Message to {username_dest} was sent succesfully."
     except requests.exceptions.HTTPError as e:
         return "Error: " + str(e)
@@ -47,7 +44,7 @@ def send_message(auth_token, username_dest, message):
 
 def get_messages(auth_token):
     header_message = {'Content-type': 'application/json', 'Authorization': f'Token {auth_token}'}
-    response = requests.get('http://localhost:8000/get-messages/', headers=header_message)
+    response = requests.get('http://localhost:8000/messages/', headers=header_message)
     try:
         response.raise_for_status()
         message_list = json.loads(response.text)
@@ -98,3 +95,5 @@ while option != ord('q'):
             get_messages(auth_token)
     elif option == ord('q'):
         print("Exiting Chat App...")
+    else:
+        print("Invalid option, choose between 1,2,3,4,q.")
